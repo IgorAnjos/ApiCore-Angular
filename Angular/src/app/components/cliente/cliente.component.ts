@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Cliente } from '../../model/cliente';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
+import { ClienteService } from '../../services/cliente.service';
 
 @Component({
   selector: 'app-cliente',
@@ -13,27 +14,48 @@ export class ClienteComponent implements OnInit {
   public title = 'Clientes';
   public clienteSelected: Cliente;
 
-  public clientes = [
-    { nome: 'Igor Macedo dos Anjos'},
-    { nome: 'Terezinha F. A. M. dos Anjos'},
-    { nome: 'Tháis Mardini dos Anjos'}
-  ];
+  public clientes: Cliente[];
 
-  constructor(private fb: FormBuilder) {
+  constructor(private fb: FormBuilder,
+              private clienteService: ClienteService) {
     this.createForm();
   }
 
   ngOnInit(): void {
+    this.carregarClientes();
+  }
+
+  carregarClientes() {
+    this.clienteService.getAll().subscribe(
+      (clientes: Cliente[]) => {
+        this.clientes = clientes;
+      },
+      (erro: any) => {
+        console.error(erro);
+      }
+    );
   }
 
   createForm(){
     this.clienteForm = this.fb.group({
+      id: [''],
       nome: ['', Validators.required]
     });
   }
 
+  saveCliente(cliente: Cliente) {
+    this.clienteService.put(cliente).subscribe(
+      (cliente: Cliente) => {
+        console.log(cliente);
+      },
+      (erro: any) => {
+        console.log(erro);
+      }
+    );
+  }
+
   clienteSubmit(){
-    console.log(this.clienteForm.value);
+    this.saveCliente(this.clienteForm.value);
   }
 
   clienteSelect(cliente: Cliente){
@@ -44,4 +66,5 @@ export class ClienteComponent implements OnInit {
   voltar(){
     this.clienteSelected = null;
   }
+
 }
